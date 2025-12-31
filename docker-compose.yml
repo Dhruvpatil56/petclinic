@@ -28,7 +28,7 @@ services:
       mysql:
         condition: service_healthy
     ports:
-      - "8080:8080"
+      - "8081:8080"
     environment:
       SPRING_PROFILES_ACTIVE: MySQL
       JDBC_URL: jdbc:mysql://mysql:3306/petclinic?useUnicode=true
