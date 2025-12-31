@@ -1,0 +1,41 @@
+version: "3.8"
+
+services:
+  mysql:
+    image: mysql:5.7
+    container_name: petclinic-mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      retries: 5
+
+  petclinic:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: petclinic-app
+    depends_on:
+      mysql:
+        condition: service_healthy
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_PROFILES_ACTIVE: MySQL
+      JDBC_URL: jdbc:mysql://mysql:3306/petclinic?useUnicode=true
+      JDBC_USERNAME: ${MYSQL_USER}
+      JDBC_PASSWORD: ${MYSQL_PASSWORD}
+    restart: always
+
+volumes:
+  mysql_data:
+
