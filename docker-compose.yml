@@ -1,21 +1,24 @@
+version: '3.8'
+
 services:
   mysql:
     image: mysql:5.7
     container_name: petclinic-mysql
     restart: always
-    environment:
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
-      MYSQL_DATABASE: ${MYSQL_DATABASE}
-      MYSQL_USER: ${MYSQL_USER}
-      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    env_file:
+      - .env
     ports:
       - "3306:3306"
     volumes:
       - mysql_data:/var/lib/mysql
+      - ./src/main/resources/db/mysql/schema.sql:/docker-entrypoint-initdb.d/1-schema.sql
+      - ./src/main/resources/db/mysql/data.sql:/docker-entrypoint-initdb.d/2-data.sql
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-proot123"]
       interval: 10s
-      retries: 5
+      timeout: 5s
+      retries: 10
+      start_period: 30s
 
   petclinic:
     build:
@@ -26,13 +29,9 @@ services:
       mysql:
         condition: service_healthy
     ports:
-      - "8081:8080"
-    environment:
-      SPRING_PROFILES_ACTIVE: MySQL
-      JDBC_URL: jdbc:mysql://mysql:3306/petclinic?useUnicode=true&characterEncoding=utf8&useSSL=false&allowPublicKeyRetrieval=true
-      JDBC_USERNAME: ${MYSQL_USER}
-      JDBC_PASSWORD: ${MYSQL_PASSWORD}
-    restart: always
+      - "8090:8080"
+    restart: on-failure
 
 volumes:
   mysql_data:
+
