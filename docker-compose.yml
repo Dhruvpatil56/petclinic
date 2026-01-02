@@ -12,6 +12,8 @@ services:
       - "3306:3306"
     volumes:
       - mysql_data:/var/lib/mysql
+      - ./src/main/resources/db/mysql/schema.sql:/docker-entrypoint-initdb.d/1-schema.sql
+      - ./src/main/resources/db/mysql/data.sql:/docker-entrypoint-initdb.d/2-data.sql
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-p${MYSQL_ROOT_PASSWORD}"]
       interval: 10s
@@ -31,9 +33,6 @@ services:
       - "8090:8080"
     environment:
       SPRING_PROFILES_ACTIVE: jdbc
-      DB_URL: jdbc:mysql://mysql:3306/petclinic?useSSL=false&allowPublicKeyRetrieval=true
-      DB_USER: ${MYSQL_USER}
-      DB_PASSWORD: ${MYSQL_PASSWORD}
     restart: on-failure
 
 volumes:
